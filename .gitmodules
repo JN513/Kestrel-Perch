@@ -1,0 +1,6 @@
+[submodule "modules/UART"]
+	path = modules/UART
+	url = https://github.com/Unicamp-Odhin/UART.git
+[submodule "modules/SPI-Slave"]
+	path = modules/SPI-Slave
+	url = https://github.com/Unicamp-Odhin/SPI-Slave
