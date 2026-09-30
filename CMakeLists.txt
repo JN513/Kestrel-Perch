@@ -1,47 +1,44 @@
 cmake_minimum_required(VERSION 3.13)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+include($ENV{PICO_SDK_PATH}/external/pico_sdk_import.cmake)
 
-include("$ENV{PICO_SDK_PATH}/external/pico_sdk_import.cmake")
-include("$ENV{PICO_EXTRAS_PATH}/external/pico_extras_import.cmake")
-
-project(kestrel_perch)
-
+project(pico_serial_bridge C CXX ASM)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
 pico_sdk_init()
 
-
-add_executable(kestrel_perch
+add_executable(pico_serial_bridge
     src/main.c
-    src/perch.c
-    src/current.c
-    src/device.c
-    src/usb.c
-    src/power.c
-    src/protocol.c
-    src/uart.c
-    )
+    src/usb_descriptors.c
+)
 
-# pull in common dependencies
-target_link_libraries(kestrel_perch PUBLIC
+# Compila o arquivo PIO
+pico_generate_pio_header(pico_serial_bridge ${CMAKE_CURRENT_LIST_DIR}/src/uart_tx_rx.pio)
+
+target_include_directories(pico_serial_bridge PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}
+)
+
+# Bibliotecas do Pico SDK
+target_link_libraries(pico_serial_bridge
     pico_stdlib
-    pico_multicore
-    hardware_adc
+    hardware_uart
     hardware_pio
-    hardware_dma
-    hardware_clocks
+    hardware_flash
+    hardware_sync
+    pico_multicore
     tinyusb_device
     tinyusb_board
 )
 
-target_include_directories(kestrel_perch PRIVATE
+target_include_directories(pico_serial_bridge PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/src/include
     ${CMAKE_CURRENT_LIST_DIR}/include
 )
 
-# pico_enable_stdio_usb(kestrel_perch 1)
+# Desativa a stdio padrão para podermos gerenciar o TinyUSB manualmente
+pico_enable_stdio_usb(pico_serial_bridge 0)
+pico_enable_stdio_uart(pico_serial_bridge 0)
 
-# create map/bin/hex file etc.
-pico_add_extra_outputs(kestrel_perch)
+pico_add_extra_outputs(pico_serial_bridge)
