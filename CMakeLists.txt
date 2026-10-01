@@ -11,10 +11,15 @@ pico_sdk_init()
 add_executable(pico_serial_bridge
     src/main.c
     src/usb_descriptors.c
+    src/uart.c
+    src/power.c
+    src/command.c
+    src/pio_uart.c
 )
 
 # Compila o arquivo PIO
-pico_generate_pio_header(pico_serial_bridge ${CMAKE_CURRENT_LIST_DIR}/src/uart_tx_rx.pio)
+pico_generate_pio_header(pico_serial_bridge ${CMAKE_CURRENT_LIST_DIR}/pio/uart_rx.pio)
+pico_generate_pio_header(pico_serial_bridge ${CMAKE_CURRENT_LIST_DIR}/pio/uart_tx.pio)
 
 target_include_directories(pico_serial_bridge PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}

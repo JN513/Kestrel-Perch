@@ -1,0 +1,73 @@
+.program uart_tx
+.side_set 1 opt
+
+; UART 8N1
+; 1 bit = 8 ciclos PIO
+;
+; OUT pin 0 e side-set pin 0 são o TX.
+
+pull side 1 [7]      ; stop bit
+set x, 7 side 0 [7] ; start bit
+
+bitloop:
+    out pins, 1
+    jmp x-- bitloop [6]
+
+% c-sdk {
+#include "hardware/clocks.h"
+
+static inline void uart_tx_init(
+    PIO pio,
+    uint sm,
+    uint offset,
+    uint pin,
+    uint baud
+) {
+    pio_sm_config c = uart_tx_program_get_default_config(offset);
+
+    // TX como saída
+    pio_gpio_init(pio, pin);
+    pio_sm_set_consecutive_pindirs(pio, sm, pin, 1, true);
+
+    // OUT -> GPIO
+    sm_config_set_out_pins(&c, pin, 1);
+
+    // side-set -> mesmo GPIO
+    sm_config_set_sideset_pins(&c, pin);
+
+    // Envia LSB primeiro
+    // Sem autopull: cada putc coloca uma palavra no FIFO.
+    sm_config_set_out_shift(&c, true, false, 32);
+
+    // Toda a FIFO disponível para TX
+    sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_TX);
+
+    // 8 ciclos por bit
+    float div = (float)clock_get_hz(clk_sys) / (8.0f * baud);
+    sm_config_set_clkdiv(&c, div);
+
+    // TX inicialmente em HIGH
+    pio_sm_set_pins_with_mask(
+        pio,
+        sm,
+        1u << pin,
+        1u << pin
+    );
+
+    pio_sm_init(pio, sm, offset, &c);
+    pio_sm_set_enabled(pio, sm, true);
+}
+
+static inline bool uart_tx_putc(
+    PIO pio,
+    uint sm,
+    uint8_t c
+) {
+    if (pio_sm_is_tx_fifo_full(pio, sm))
+        return false;
+
+    pio_sm_put(pio, sm, c);
+
+    return true;
+}
+%}
