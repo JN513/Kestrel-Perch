@@ -12,7 +12,6 @@ char cmdBuffer[128];
 size_t cmdLen = 0;
 
 
-
 void cli_printf(const char *format, ...) {
     char buf[256];
     va_list args;
@@ -59,9 +58,8 @@ void handle_cmd_interface() {
         
         if (ch == '\r' || ch == '\n') {
             cmdBuffer[cmdLen] = '\0';
-            if(cmdLen > 0) {
+            if(cmdLen > 0)
                 process_cmd(cmdBuffer);
-            }
             cmdLen = 0;
         } else if ((ch == '\b' || ch == 127) && cmdLen > 0) {
             cmdLen--;

@@ -23,36 +23,46 @@ static inline void uart_tx_init(
     uint pin,
     uint baud
 ) {
-    pio_sm_config c = uart_tx_program_get_default_config(offset);
-
-    // TX como saída
-    pio_gpio_init(pio, pin);
-    pio_sm_set_consecutive_pindirs(pio, sm, pin, 1, true);
-
-    // OUT -> GPIO
-    sm_config_set_out_pins(&c, pin, 1);
-
-    // side-set -> mesmo GPIO
-    sm_config_set_sideset_pins(&c, pin);
-
-    // Envia LSB primeiro
-    // Sem autopull: cada putc coloca uma palavra no FIFO.
-    sm_config_set_out_shift(&c, true, false, 32);
-
-    // Toda a FIFO disponível para TX
-    sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_TX);
-
-    // 8 ciclos por bit
-    float div = (float)clock_get_hz(clk_sys) / (8.0f * baud);
-    sm_config_set_clkdiv(&c, div);
-
-    // TX inicialmente em HIGH
+    // Estado inicial: TX HIGH
     pio_sm_set_pins_with_mask(
         pio,
         sm,
         1u << pin,
         1u << pin
     );
+
+    pio_sm_set_pindirs_with_mask(
+        pio,
+        sm,
+        1u << pin,
+        1u << pin
+    );
+
+    pio_gpio_init(pio, pin);
+
+    pio_sm_config c =
+        uart_tx_program_get_default_config(offset);
+
+    sm_config_set_out_pins(&c, pin, 1);
+    sm_config_set_sideset_pins(&c, pin);
+
+    sm_config_set_out_shift(
+        &c,
+        true,   // shift right = LSB first
+        false,  // no autopull
+        32
+    );
+
+    sm_config_set_fifo_join(
+        &c,
+        PIO_FIFO_JOIN_TX
+    );
+
+    float div =
+        (float)clock_get_hz(clk_sys) /
+        (8.0f * baud);
+
+    sm_config_set_clkdiv(&c, div);
 
     pio_sm_init(pio, sm, offset, &c);
     pio_sm_set_enabled(pio, sm, true);

@@ -21,8 +21,8 @@
 // /dev/ttyACM0 => 2 (TX); 3 (RX) | PIO
 // /dev/ttyACM1 => 4 (TX); 5 (RX) | PIO
 // /dev/ttyACM2 => 6 (TX); 7 (RX) | PIO
-// /dev/ttyACM3 => 8 (TX); 9 (RX) | PIO
-// /dev/ttyACM4 => 10 (TX); 11 (RX) | HW-UART
+// /dev/ttyACM3 => 8 (TX); 9 (RX) | HW-UART
+// /dev/ttyACM4 => 10 (TX); 11 (RX) | PIO
 // /dev/ttyACM5 => 12 (TX); 13 (RX) | HW-UART
 
 #define UART0_RX_PIN 3
@@ -51,19 +51,5 @@ static const int defaultRX[NUM_PORTS] = {UART0_RX_PIN, UART1_RX_PIN, UART2_RX_PI
 #define UART_RX_BUFFER_SIZE 4096
 #define UART_TX_BUFFER_SIZE 4096
 
-typedef struct {
-    int baudrates[NUM_PORTS];
-    int tx_pins[NUM_PORTS];
-    int rx_pins[NUM_PORTS];
-} config_t;
-
-static const config_t config = {
-    .baudrates = {DEFAULT_BAUDRATE, DEFAULT_BAUDRATE, DEFAULT_BAUDRATE,
-                  DEFAULT_BAUDRATE, DEFAULT_BAUDRATE, DEFAULT_BAUDRATE},
-    .tx_pins = {UART0_TX_PIN, UART1_TX_PIN, UART2_TX_PIN,
-                UART3_TX_PIN, UART4_TX_PIN, UART5_TX_PIN},
-    .rx_pins = {UART0_RX_PIN, UART1_RX_PIN, UART2_RX_PIN,
-                UART3_RX_PIN, UART4_RX_PIN, UART5_RX_PIN}
-};
 
 #endif // !__CONFIG_H__

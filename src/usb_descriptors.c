@@ -78,17 +78,17 @@ uint8_t const * tud_descriptor_configuration_cb(uint8_t index) {
 
 // --- Descritores de String ---
 char const* string_desc_arr [] = {
-    (const char[]) { 0x09, 0x04 }, // 0: Idioma (English 0x0409)
-    "Raspberry Pi",                // 1: Fabricante
-    "Pico Multi-CDC Bridge",       // 2: Produto
-    "1234567890",                  // 3: Serial
-    "ACM0 Bridge",                 // 4: Interface CDC 0
-    "ACM1 Bridge",                 // 5: Interface CDC 1
-    "ACM2 Bridge",                 // 6: Interface CDC 2
-    "ACM3 Bridge",                 // 7: Interface CDC 3
-    "ACM4 Bridge",                 // 8: Interface CDC 4
-    "ACM5 Bridge",                 // 9: Interface CDC 5
-    "CLI Command Interface"        // 10: Interface CDC 6
+    (const char[]) { 0x09, 0x04 },     // 0: Idioma (English 0x0409)
+    "CH Microsystems",                 // 1: Fabricante
+    "Kestrel Perch Multi-UART bridge", // 2: Produto
+    "1234567890",                      // 3: Serial
+    "ACM0 Bridge",                     // 4: Interface CDC 0
+    "ACM1 Bridge",                     // 5: Interface CDC 1
+    "ACM2 Bridge",                     // 6: Interface CDC 2
+    "ACM3 Bridge",                     // 7: Interface CDC 3
+    "ACM4 Bridge",                     // 8: Interface CDC 4
+    "ACM5 Bridge",                     // 9: Interface CDC 5
+    "CLI Command Interface"            // 10: Interface CDC 6
 };
 
 static uint16_t _desc_str[32];

@@ -6,44 +6,72 @@ pio_uart_t pio_uarts[NUM_PIO_UARTS];
 uint pio_offset_tx[2];
 uint pio_offset_rx[2];
 
+static inline int get_port(int port)
+{
+    switch (port) {
+        case 0: return 0;
+        case 1: return 1;
+        case 2: return 2;
+        case 4: return 3;
+        default: return -1;
+    }
+}
+
 bool uart_pio_tx_ready(int port)
 {
-    PIO pio = pio_uarts[port].pio;
-    uint sm = pio_uarts[port].sm_tx;
+    int _port = get_port(port);
+
+    if (_port < 0)
+        return false;
+
+    PIO pio = pio_uarts[_port].pio;
+    uint sm = pio_uarts[_port].sm_tx;
 
     return !pio_sm_is_tx_fifo_full(pio, sm);
 }
 
 bool uart_pio_putc(int port, uint8_t c)
 {
-    PIO pio = pio_uarts[port].pio;
-    uint sm = pio_uarts[port].sm_tx;
+    int _port = get_port(port);
+    if (_port < 0)
+        return false;
+    
+    PIO pio = pio_uarts[_port].pio;
+    uint sm = pio_uarts[_port].sm_tx;
 
     if (pio_sm_is_tx_fifo_full(pio, sm))
         return false;
 
-    pio_sm_put(pio, sm, c);
+    pio_sm_put(pio, sm, (uint32_t)c);
 
     return true;
 }
 
 bool uart_pio_available(int port)
 {
-    PIO pio = pio_uarts[port].pio;
-    uint sm = pio_uarts[port].sm_rx;
+    int _port = get_port(port);
+    if (_port < 0)
+        return false;
+
+    PIO pio = pio_uarts[_port].pio;
+    uint sm = pio_uarts[_port].sm_rx;
 
     return !pio_sm_is_rx_fifo_empty(pio, sm);
 }
 
 bool uart_pio_getc(int port, uint8_t *c)
 {
-    PIO pio = pio_uarts[port].pio;
-    uint sm = pio_uarts[port].sm_rx;
+    int _port = get_port(port);
+    if (_port < 0)
+        return false;
+    
+        PIO pio = pio_uarts[_port].pio;
+    uint sm = pio_uarts[_port].sm_rx;
 
     if (pio_sm_is_rx_fifo_empty(pio, sm))
         return false;
 
-    *c = (uint8_t)pio_sm_get(pio, sm);
+    *c = (uint8_t)(pio_sm_get(pio, sm) >> 24);
 
     return true;
 }
@@ -88,7 +116,7 @@ void pio_uart_init(void)
     pio_uarts[3].sm_rx = 3;
 
     // Inicializa cada UART
-    for (int i = 0; i < NUM_PIO_UARTS; i++) {
+    for (int i = 0; i < NUM_PIO_UARTS - 1; i++) {
 
         int p = (i < 2) ? 0 : 1;
 
@@ -96,16 +124,32 @@ void pio_uart_init(void)
             pio_uarts[i].pio,
             pio_uarts[i].sm_tx,
             pio_offset_tx[p],
-            config.tx_pins[i],
-            config.baudrates[i]
+            defaultTX[i],
+            DEFAULT_BAUDRATE
         );
 
         uart_rx_init(
             pio_uarts[i].pio,
             pio_uarts[i].sm_rx,
             pio_offset_rx[p],
-            config.rx_pins[i],
-            config.baudrates[i]
+            defaultRX[i],
+            DEFAULT_BAUDRATE
         );
     }
+
+    uart_tx_init(
+        pio_uarts[3].pio,
+        pio_uarts[3].sm_tx,
+        pio_offset_tx[1],
+        defaultTX[4],
+        DEFAULT_BAUDRATE
+    );
+
+    uart_rx_init(
+        pio_uarts[3].pio,
+        pio_uarts[3].sm_rx,
+        pio_offset_rx[1],
+        defaultRX[4],
+        DEFAULT_BAUDRATE
+    );
 }

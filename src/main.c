@@ -13,6 +13,7 @@
 #include "power.h"
 #include "pico/multicore.h"
 
+#define LED_PIN PICO_DEFAULT_LED_PIN
 
 void core1_main() {
     while (1) {
@@ -30,6 +31,10 @@ void core1_main() {
 int main(void) {
     board_init();
 
+    gpio_init(LED_PIN);
+    gpio_set_dir(LED_PIN, GPIO_OUT);
+    gpio_put(LED_PIN, 0); // Acende o LED para indicar que o sistema está inicializando
+
     init_power();
     init_uarts(); // Inicializa os UARTs
     
@@ -42,11 +47,10 @@ int main(void) {
         tud_task();
 
         for (int port = 0; port < NUM_PORTS; port++) {
-            if (!tud_cdc_n_connected(port) && !tud_cdc_n_available(port))
-                continue;
-            
-            uint8_t ch = tud_cdc_n_read_char(port);
-            uart_putc_nonblocking(port, ch);
+            if (tud_cdc_n_connected(port) && tud_cdc_n_available(port)) {
+                uint8_t ch = tud_cdc_n_read_char(port);
+                uart_putc_nonblocking(port, ch);
+            }
         }
 
         handle_cmd_interface();
